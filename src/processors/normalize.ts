@@ -1,6 +1,13 @@
-// src/processors/normalize.ts
+import { PipelineComponent } from "../core/pipeline";
+import { IntentResult } from "../types";
 
-export function normalize(text: string): string {
-    // Add normalization logic here (e.g., lowercase)
-    return text.toLowerCase();
-}
+export const normalize: PipelineComponent = (
+  input: IntentResult,
+): IntentResult => {
+  input.tokens.forEach((token) => {
+    if (token.type === "word") {
+      token.value = token.value.toLowerCase();
+    }
+  });
+  return input;
+};
