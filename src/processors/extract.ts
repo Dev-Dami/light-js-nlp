@@ -45,38 +45,22 @@ function extractPhones(input: IntentResult): void {
   // A simplified approach to find phone numbers without regex
   // Look for sequences of digits with possible separators
   
-  // Split the text by delimiters to find potential phone numbers
-  const tokens = text.split(/[\s\n\r\t,;()<>[\]{}]+/);
+  // Use regex to find potential phone numbers more efficiently
+  const phonePattern = /(?:\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/g;
   
-  for (const token of tokens) {
-    if (!token) continue;
+  let match;
+  while ((match = phonePattern.exec(text)) !== null) {
+    const fullMatch = match[0];
+    input.entities.push({
+      type: 'phone',
+      value: fullMatch,
+      start: match.index,
+      end: match.index + fullMatch.length,
+    });
     
-    // A phone number typically has 10-15 digits with possible separators
-    if (token.length >= 10) {
-      let digitCount = 0;
-      let separatorCount = 0;
-      
-      // Count digits and valid phone number separators
-      for (const char of token) {
-        if (isDigit(char)) {
-          digitCount++;
-        } else if (['-', '.', ' ', '(', ')', '+'].includes(char)) {
-          separatorCount++;
-        }
-      }
-      
-      if (digitCount >= 10 && digitCount <= 15 && (digitCount + separatorCount === token.length)) {
-        // This may be a phone number
-        const start = text.indexOf(token);
-        if (start !== -1) {
-          input.entities.push({
-            type: 'phone',
-            value: token,
-            start,
-            end: start + token.length,
-          });
-        }
-      }
+    // Prevent infinite loop in case regex doesn't advance
+    if (match.index === phonePattern.lastIndex) {
+      phonePattern.lastIndex++;
     }
   }
 }
