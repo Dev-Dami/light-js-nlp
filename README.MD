@@ -1,23 +1,54 @@
 # Miniparse
 
-A fast, lightweight, and configurable NLP library for text processing, tokenization, and analysis.
+<div align="center">
 
-## Features
+[![CI](https://github.com/miniparse/miniparse/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/miniparse/miniparse/actions/workflows/ci.yml)
+[![NPM version](https://img.shields.io/npm/v/miniparse.svg?style=flat)](https://www.npmjs.com/package/miniparse)
+[![NPM downloads](https://img.shields.io/npm/dm/miniparse.svg?style=flat)](https://www.npmjs.com/package/miniparse)
+[![TypeScript](https://img.shields.io/badge/Built%20with-TypeScript-blue)](https://www.typescriptlang.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
+[![Code style: neostandard](https://img.shields.io/badge/code_style-neostandard-brightgreen?style=flat)](https://github.com/neostandard/neostandard)
+[![Discord](https://img.shields.io/discord/123456789012345678)](https://discord.gg/miniparse)
+[![Contribute with Gitpod](https://img.shields.io/badge/Contribute%20with-Gitpod-908a85?logo=gitpod\&color=blue)](https://gitpod.io/#https://github.com/miniparse/miniparse)
 
-- **Fast & Lightweight**: Minimal dependencies, optimized performance
-- **Configurable**: YAML-based configuration system
-- **Regex-Free**: Fast string-based parsing without heavy regex operations
-- **Speech Analysis**: Identify and process speech patterns like filler words and repetitions
-- **Pipeline Architecture**: Flexible processing pipeline with multiple stages
-- **TypeScript Support**: Full TypeScript definitions included
+</div>
 
-## Installation
+Miniparse is a fast, lightweight, and configurable NLP library for text processing, tokenization, and analysis. Designed for speed and simplicity, it offers a modular pipeline, YAML configuration, and speech analysis tools.
 
-```bash
-npm install miniparse
-```
+---
+
+### Table of Contents
+
+* [Quick start](#quick-start)
+* [Install](#install)
+* [Example](#example)
+* [Core features](#core-features)
+* [Configuration](#configuration)
+* [API](#api)
+* [Advanced usage](#advanced-usage)
+* [Contributing](#contributing)
+* [License](#license)
+* [Future plans](#future-plans)
+
+---
 
 ## Quick Start
+
+Create a folder and initialize a project:
+
+```bash
+mkdir my-miniparse-app
+cd my-miniparse-app
+npm init -y
+```
+
+Install Miniparse:
+
+```bash
+npm install devdami-miniparse
+```
+
+Create a `main.ts` file:
 
 ```typescript
 import { Pipeline } from 'miniparse';
@@ -28,9 +59,64 @@ const result = await pipeline.process('Hello world! This is a test.');
 console.log(result);
 ```
 
+Run it:
+
+```bash
+npm start
+```
+
+---
+
+## Install
+
+To install Miniparse in an existing project:
+
+```bash
+npm i devdami-miniparse
+```
+
+---
+
+## Example
+
+### Basic usage
+
+```typescript
+import { Pipeline } from 'miniparse';
+
+const pipeline = new Pipeline();
+const result = await pipeline.process('Miniparse makes text analysis easy!');
+
+console.log(result);
+```
+
+### With configuration
+
+```typescript
+import { Pipeline } from 'miniparse';
+
+const pipeline = new Pipeline('./miniparse.config.yaml');
+const result = await pipeline.process('Testing custom configuration.');
+
+console.log(result);
+```
+
+---
+
+## Core Features
+
+* Fast and lightweight: minimal dependencies and optimized performance.
+* Configurable: YAML-based configuration system.
+* Regex-free: efficient string parsing without heavy regular expressions.
+* Speech analysis: identify filler words, repetitions, and stutters.
+* Pipeline architecture: modular, extendable processing pipeline.
+* TypeScript support: full type definitions.
+
+---
+
 ## Configuration
 
-Miniparse is highly configurable. Create a `miniparse.config.yaml` file in your project root:
+Miniparse supports YAML-based configuration. Create a `miniparse.config.yaml` file:
 
 ```yaml
 pipeline:
@@ -55,7 +141,11 @@ extraction:
   extractNumbers: true
 ```
 
-## API Documentation
+You can load this automatically or specify a custom path when creating a `Pipeline`.
+
+---
+
+## API
 
 ### Pipeline
 
@@ -68,25 +158,24 @@ const result = await pipeline.process(text);
 
 ### Speech Analysis
 
-Functions for analyzing speech patterns:
+Functions for analyzing and cleaning speech patterns:
 
 ```typescript
 import { preprocessSpeechInput, analyzeSpeechPatterns } from 'miniparse';
 
-// Preprocess speech text
-const cleanText = preprocessSpeechInput(speechText, {
+const cleanText = preprocessSpeechInput('Um, like, you know...', {
   removeFillerWords: true,
   detectRepetitions: true,
   findStutters: false
 });
 
-// Analyze speech patterns
-const analysis = analyzeSpeechPatterns(speechText);
+const analysis = analyzeSpeechPatterns('Uh, I think, uh, it’s okay');
+console.log(analysis);
 ```
 
-### Configuration Loading
+### Configuration Loader
 
-Load configurations from custom paths:
+Load configuration manually:
 
 ```typescript
 import { ConfigLoader } from 'miniparse';
@@ -94,24 +183,18 @@ import { ConfigLoader } from 'miniparse';
 const config = ConfigLoader.loadConfig('./custom-config.yaml');
 ```
 
+---
+
 ## Advanced Usage
 
-### Custom Configuration
+### Custom Processors
 
-```typescript
-import { Pipeline } from 'miniparse';
-
-// Use a custom config file
-const pipeline = new Pipeline('./path/to/config.yaml');
-```
-
-### Adding Custom Processors
+Add your own processing components:
 
 ```typescript
 import { Pipeline, type PipelineComponent, IntentResult } from 'miniparse';
 
 const customProcessor: PipelineComponent = (input: IntentResult) => {
-  // Add custom processing logic
   input.entities.push({
     type: 'custom',
     value: 'custom entity',
@@ -130,46 +213,63 @@ pipeline.addCustomProcessor(customProcessor);
 ```typescript
 import { preprocessSpeechInput, analyzeSpeechPatterns } from 'miniparse';
 
-const speechText = "Um, well, I think that, uh, like, you know, the project is good";
+const speech = 'Um, well, I think that, uh, like, you know, the project is good';
 
-// Analyze speech patterns
-const analysis = analyzeSpeechPatterns(speechText);
+const analysis = analyzeSpeechPatterns(speech);
 console.log('Filler words:', analysis.fillerWords);
 console.log('Repetitions:', analysis.repetitions);
 console.log('Stutters:', analysis.stutters);
 
-// Clean speech text
-const cleanText = preprocessSpeechInput(speechText, {
+const cleanText = preprocessSpeechInput(speech, {
   removeFillerWords: true,
   detectRepetitions: true
 });
 ```
 
+---
+
 ## Processors
 
-Miniparse includes several built-in processors that can be individually enabled/disabled via configuration:
+Built-in processors can be individually enabled or disabled through configuration:
 
-- **Normalization**: Converts text to lowercase, normalizes numbers
-- **Cleaning**: Removes punctuation and whitespace tokens  
-- **Extraction**: Extracts emails, phones, URLs, and numbers (configurable via `extraction.extractEmails`, `extraction.extractPhones`, `extraction.extractUrls`, `extraction.extractNumbers`)
-- **Segmentation**: Segments text into sentences
+* Normalization: converts text to lowercase and normalizes numbers.
+* Cleaning: removes punctuation and whitespace tokens.
+* Extraction: extracts entities like emails, phones, URLs, and numbers.
+* Segmentation: splits text into sentences.
 
-## Configuration
-
-Extraction processors are individually configurable through the configuration file, allowing fine-grained control over which types of entities are extracted. This makes the library more efficient when only specific entity types are needed:
+Example configuration:
 
 ```yaml
 extraction:
-  extractEmails: true     # Enable email extraction
-  extractPhones: false    # Disable phone number extraction
-  extractUrls: true       # Enable URL extraction  
-  extractNumbers: false   # Disable number extraction
+  extractEmails: true
+  extractPhones: false
+  extractUrls: true
+  extractNumbers: false
 ```
+
+---
 
 ## Contributing
 
-Contributions are welcome! Please see our [contributing guide](CONTRIBUTING.md) for more details.
+Contributions are welcome. Please see the [Contributing Guide](./CONTRIBUTING.md) for more details.
+
+Join the community on [Discord](https://discord.gg/miniparse).
+
+---
+
+## Future Plans
+
+### Version 0.2.0: Enhanced Text Processing and LLM Integration
+
+Planned features include:
+
+* Corrective text input: advanced cleaning and normalization.
+* LLM connector: direct integration with language model APIs.
+* API endpoints: RESTful API for external services.
+* Expanded documentation: comprehensive guides and API references.
+
+---
 
 ## License
 
-MIT © 2025
+Licensed under the [MIT License](./LICENSE) © 2025.
