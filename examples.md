@@ -227,3 +227,24 @@ async function processLargeText() {
   return results;
 }
 ```
+
+## Advanced Configuration and Custom Extraction
+
+### Using Individual Extraction Functions
+You can also use individual extraction functions when you need fine-grained control over which entities are extracted. The library exports separate functions that can be added to the pipeline as needed:
+
+```typescript
+import { Pipeline, extractEmailsOnly, extractPhonesOnly, extractUrlsOnly, extractNumbersOnly } from 'miniparse';
+
+async function customExtraction() {
+  const pipeline = new Pipeline();
+  
+  // Add only specific extraction processors to the pipeline
+  pipeline.addCustomProcessor(extractEmailsOnly);  // Only email extraction
+  // pipeline.addCustomProcessor(extractPhonesOnly);  // Uncomment to add phone extraction too
+  
+  const result = await pipeline.process('Email: test@example.com and Phone: (555) 123-4567');
+  // Only emails will be extracted based on the processors added
+  console.log('Result entities:', result.entities.filter(e => e.type === 'email'));
+}
+```

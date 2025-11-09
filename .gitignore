@@ -154,3 +154,6 @@ test-pipeline-no-extract.js
 minimal-test.js
 comprehensive_test.js
 final_test.js
+direct_config_test.js
+tests/custom_config_test.js
+tests/config_test.js

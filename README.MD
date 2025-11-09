@@ -147,12 +147,24 @@ const cleanText = preprocessSpeechInput(speechText, {
 
 ## Processors
 
-Miniparse includes several built-in processors:
+Miniparse includes several built-in processors that can be individually enabled/disabled via configuration:
 
 - **Normalization**: Converts text to lowercase, normalizes numbers
-- **Cleaning**: Removes punctuation and whitespace tokens
-- **Extraction**: Extracts emails, phones, URLs, and numbers
+- **Cleaning**: Removes punctuation and whitespace tokens  
+- **Extraction**: Extracts emails, phones, URLs, and numbers (configurable via `extraction.extractEmails`, `extraction.extractPhones`, `extraction.extractUrls`, `extraction.extractNumbers`)
 - **Segmentation**: Segments text into sentences
+
+## Configuration
+
+Extraction processors are individually configurable through the configuration file, allowing fine-grained control over which types of entities are extracted. This makes the library more efficient when only specific entity types are needed:
+
+```yaml
+extraction:
+  extractEmails: true     # Enable email extraction
+  extractPhones: false    # Disable phone number extraction
+  extractUrls: true       # Enable URL extraction  
+  extractNumbers: false   # Disable number extraction
+```
 
 ## Contributing
 
