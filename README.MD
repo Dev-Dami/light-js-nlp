@@ -12,7 +12,7 @@
 
 </div>
 
-Miniparse is a fast, lightweight, and configurable NLP library for text processing, tokenization, and analysis. Designed for speed and simplicity, it offers a modular pipeline, YAML configuration, and speech analysis tools.
+Miniparse is a fast, lightweight, and configurable NLP library for text processing, tokenization, and analysis. Designed for speed and simplicity, it offers a modular pipeline, YAML configuration, and advanced LLM integration with Google Gemini.
 
 ---
 
@@ -22,6 +22,7 @@ Miniparse is a fast, lightweight, and configurable NLP library for text processi
 * [Install](#install)
 * [Example](#example)
 * [Core features](#core-features)
+* [LLM Integration](#llm-integration)
 * [Configuration](#configuration)
 * [API](#api)
 * [Advanced usage](#advanced-usage)
@@ -44,17 +45,27 @@ npm init -y
 Install Miniparse:
 
 ```bash
-npm install devdami-miniparse
+npm install devdami-miniparse @google/generative-ai
 ```
 
 Create a `main.ts` file:
 
 ```typescript
-import { Pipeline } from 'miniparse';
+import { Pipeline, GeminiLLMAdapter, createLLMSentimentAnalyzer } from 'miniparse';
 
+// Create a pipeline
 const pipeline = new Pipeline();
-const result = await pipeline.process('Hello world! This is a test.');
 
+// Create a Gemini LLM adapter (requires API key)
+const geminiAdapter = new GeminiLLMAdapter({
+  apiKey: process.env.GEMINI_API_KEY!,
+  model: 'gemini-2.5-flash',
+});
+
+// Add an LLM sentiment analyzer
+pipeline.addLLMProcessor(createLLMSentimentAnalyzer(geminiAdapter));
+
+const result = await pipeline.process('I love this product! It works perfectly.');
 console.log(result);
 ```
 
@@ -71,7 +82,7 @@ npm start
 To install Miniparse in an existing project:
 
 ```bash
-npm i devdami-miniparse
+npm i devdami-miniparse @google/generative-ai
 ```
 
 ---
@@ -89,6 +100,23 @@ const result = await pipeline.process('Miniparse makes text analysis easy!');
 console.log(result);
 ```
 
+### With LLM integration
+
+```typescript
+import { Pipeline, GeminiLLMAdapter, createLLMSummarizer } from 'miniparse';
+
+const geminiAdapter = new GeminiLLMAdapter({
+  apiKey: process.env.GEMINI_API_KEY!,
+  model: 'gemini-2.5-flash', // Free, fast model
+});
+
+const pipeline = new Pipeline();
+pipeline.addLLMProcessor(createLLMSummarizer(geminiAdapter, undefined, 50));
+
+const result = await pipeline.process('Your long text here...');
+console.log(result.entities); // Contains summary entity
+```
+
 ### With configuration
 
 ```typescript
@@ -98,6 +126,96 @@ const pipeline = new Pipeline('./miniparse.config.yaml');
 const result = await pipeline.process('Testing custom configuration.');
 
 console.log(result);
+```
+
+## Use Cases
+
+Miniparse is designed for a variety of text processing and analysis scenarios:
+
+### Content Moderation
+Automatically analyze user-generated content to detect inappropriate language, sentiment, or topics:
+
+```typescript
+import { Pipeline, GeminiLLMAdapter, createLLMSentimentAnalyzer } from 'miniparse';
+
+const pipeline = new Pipeline();
+const adapter = new GeminiLLMAdapter({
+  apiKey: process.env.GEMINI_API_KEY!,
+  model: 'gemini-2.5-flash'
+});
+
+pipeline.addLLMProcessor(createLLMSentimentAnalyzer(adapter));
+const result = await pipeline.process('User comment here...');
+// Check result.entities for sentiment classification
+```
+
+### Customer Support Automation
+Process and classify customer queries to route them to appropriate support teams:
+
+```typescript
+const pipeline = new Pipeline();
+const adapter = new GeminiLLMAdapter({
+  apiKey: process.env.GEMINI_API_KEY!,
+  model: 'gemini-2.5-flash'
+});
+
+pipeline.addLLMProcessor(createLLMIntentClassifier(adapter, [
+  'billing', 'technical', 'account', 'feedback'
+]));
+const result = await pipeline.process('Customer query...');
+```
+
+### Document Analysis
+Extract key information from documents and summarize content:
+
+```typescript
+const pipeline = new Pipeline();
+const adapter = new GeminiLLMAdapter({
+  apiKey: process.env.GEMINI_API_KEY!,
+  model: 'gemini-2.5-flash'
+});
+
+pipeline.addLLMProcessor(createLLMSummarizer(adapter, undefined, 100));
+pipeline.addLLMProcessor(createLLMEntityExtractor(
+  'Extract important entities like dates, names, and amounts:',
+  adapter
+));
+const result = await pipeline.process('Long document...');
+```
+
+### Social Media Monitoring
+Analyze social media posts for brand mentions, sentiment, and trending topics:
+
+```typescript
+const pipeline = new Pipeline();
+const adapter = new GeminiLLMAdapter({
+  apiKey: process.env.GEMINI_API_KEY!,
+  model: 'gemini-2.5-flash'
+});
+
+pipeline.addLLMProcessor(createLLMTopicClassifier(adapter));
+pipeline.addLLMProcessor(createLLMSentimentAnalyzer(adapter));
+const result = await pipeline.process('Social media post...');
+```
+
+### Data Extraction from Unstructured Text
+Extract structured information from unstructured text sources:
+
+```typescript
+const pipeline = new Pipeline();
+// Use built-in extractors for common entities
+const result = await pipeline.process('Contact: john@example.com, Phone: 555-1234');
+// result.entities will contain extracted emails and phones
+```
+
+### Speech-to-Text Post-Processing
+Clean and analyze transcribed speech for applications like meeting notes or interviews:
+
+```typescript
+const pipeline = new Pipeline();
+// Clean up speech artifacts like filler words
+const result = await pipeline.process('Um, so, like, we should consider, uh, the options...');
+// Clean text without filler words and improved structure
 ```
 
 ---
@@ -110,6 +228,55 @@ console.log(result);
 * Speech analysis: identify filler words, repetitions, and stutters.
 * Pipeline architecture: modular, extendable processing pipeline.
 * TypeScript support: full type definitions.
+* LLM Integration: Built-in support for Google Gemini API with caching and fallbacks.
+
+---
+
+## LLM Integration
+
+Miniparse now includes powerful integration with Google's Gemini API, featuring the free and fast Gemini 2.5 Flash model.
+
+### Available LLM Components
+
+* `createLLMSentimentAnalyzer`: Analyze text sentiment using AI
+* `createLLMEntityExtractor`: Extract named entities using AI
+* `createLLMSummarizer`: Summarize text using AI
+* `createLLMTopicClassifier`: Classify topics in text using AI
+* `createLLMIntentClassifier`: Identify user intent using AI
+* `createLLMTextEnhancer`: Enhance text quality using AI
+
+### Setup
+
+First, install the Google Generative AI package:
+
+```bash
+npm install @google/generative-ai
+```
+
+Get your API key from [Google AI Studio](https://aistudio.google.com/), then use in your code:
+
+```typescript
+import { GeminiLLMAdapter, createLLMSentimentAnalyzer } from 'miniparse';
+
+const adapter = new GeminiLLMAdapter({
+  apiKey: 'your-api-key',
+  model: 'gemini-2.5-flash',  // Free, fast model
+});
+```
+
+### LLM Configuration
+
+You can also configure LLM functionality through YAML:
+
+```yaml
+llm:
+  enabled: true
+  provider: gemini
+  apiKey: ${GEMINI_API_KEY}  # Environment variable
+  model: gemini-2.5-flash
+  temperature: 0.7
+  maxTokens: 1024
+```
 
 ---
 
@@ -138,6 +305,13 @@ extraction:
   extractPhones: true
   extractUrls: true
   extractNumbers: true
+
+llm:
+  enabled: false
+  provider: gemini
+  model: gemini-2.5-flash
+  temperature: 0.7
+  maxTokens: 1024
 ```
 
 You can load this automatically or specify a custom path when creating a `Pipeline`.
@@ -153,6 +327,16 @@ The main processing class that orchestrates text analysis:
 ```typescript
 const pipeline = new Pipeline(configPath?);
 const result = await pipeline.process(text);
+```
+
+### LLM Integration Methods
+
+```typescript
+// Get the configured LLM adapter
+const adapter = pipeline.getLLMAdapter();
+
+// Add an LLM processor
+pipeline.addLLMProcessor(llmProcessor);
 ```
 
 ### Speech Analysis
@@ -185,6 +369,61 @@ const config = ConfigLoader.loadConfig('./custom-config.yaml');
 ---
 
 ## Advanced Usage
+
+### Custom LLM Processors
+
+Add your own LLM processing components:
+
+```typescript
+import { 
+  Pipeline, 
+  GeminiLLMAdapter, 
+  createLLMProcessor 
+} from 'miniparse';
+
+const geminiAdapter = new GeminiLLMAdapter({
+  apiKey: process.env.GEMINI_API_KEY!,
+  model: 'gemini-2.5-flash',
+});
+
+// Create a custom LLM processor
+const customLLMProcessor = createLLMProcessor({
+  promptTemplate: "Classify this text as positive, negative, or neutral: {text}",
+  adapter: geminiAdapter
+});
+
+const pipeline = new Pipeline();
+pipeline.addLLMProcessor(customLLMProcessor);
+```
+
+### Multiple LLM Processors
+
+Chain multiple AI-powered processors:
+
+```typescript
+import { 
+  Pipeline, 
+  GeminiLLMAdapter,
+  createLLMSentimentAnalyzer,
+  createLLMTopicClassifier,
+  createLLMSummarizer
+} from 'miniparse';
+
+const geminiAdapter = new GeminiLLMAdapter({
+  apiKey: process.env.GEMINI_API_KEY!,
+  model: 'gemini-2.5-flash',
+});
+
+const pipeline = new Pipeline();
+
+// Add multiple LLM processors
+pipeline.addLLMProcessor(createLLMSentimentAnalyzer(geminiAdapter));
+pipeline.addLLMProcessor(createLLMTopicClassifier(geminiAdapter));
+pipeline.addLLMProcessor(createLLMSummarizer(geminiAdapter, undefined, 50));
+
+const result = await pipeline.process('Your text here...');
+console.log(result.entities); // Contains sentiment, topic, and summary entities
+```
 
 ### Custom Processors
 
@@ -235,6 +474,7 @@ Built-in processors can be individually enabled or disabled through configuratio
 * Cleaning: removes punctuation and whitespace tokens.
 * Extraction: extracts entities like emails, phones, URLs, and numbers.
 * Segmentation: splits text into sentences.
+* LLM Processors: AI-powered text analysis and processing components.
 
 Example configuration:
 
@@ -244,6 +484,11 @@ extraction:
   extractPhones: false
   extractUrls: true
   extractNumbers: false
+
+llm:
+  enabled: true
+  provider: gemini
+  model: gemini-2.5-flash
 ```
 
 ---
@@ -262,7 +507,7 @@ Contributions are welcome. Please see the [Contributing Guide](./CONTRIBUTING.md
 Planned features include:
 
 * Corrective text input: advanced cleaning and normalization.
-* LLM connector: direct integration with language model APIs (Google Gemini).
+* Enhanced LLM integration: support for more models and providers.
 * API endpoints: RESTful API for external services.
 * Expanded documentation: comprehensive guides and API references.
 
