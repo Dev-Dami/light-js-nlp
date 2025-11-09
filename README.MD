@@ -2,14 +2,13 @@
 
 <div align="center">
 
-[![CI](https://github.com/miniparse/miniparse/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/miniparse/miniparse/actions/workflows/ci.yml)
-[![NPM version](https://img.shields.io/npm/v/miniparse.svg?style=flat)](https://www.npmjs.com/package/miniparse)
-[![NPM downloads](https://img.shields.io/npm/dm/miniparse.svg?style=flat)](https://www.npmjs.com/package/miniparse)
+[![CI](https://github.com/dev-dami/miniparse/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/dev-dami/miniparse/actions/workflows/ci.yml)
+[![NPM version](https://img.shields.io/npm/v/devdami-miniparse.svg?style=flat)](https://www.npmjs.com/package/devdami-miniparse)
+[![NPM downloads](https://img.shields.io/npm/dm/devdami-miniparse.svg?style=flat)](https://www.npmjs.com/package/devdami-miniparse)
 [![TypeScript](https://img.shields.io/badge/Built%20with-TypeScript-blue)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![Code style: neostandard](https://img.shields.io/badge/code_style-neostandard-brightgreen?style=flat)](https://github.com/neostandard/neostandard)
-[![Discord](https://img.shields.io/discord/123456789012345678)](https://discord.gg/miniparse)
-[![Contribute with Gitpod](https://img.shields.io/badge/Contribute%20with-Gitpod-908a85?logo=gitpod\&color=blue)](https://gitpod.io/#https://github.com/miniparse/miniparse)
+[![Contribute with Gitpod](https://img.shields.io/badge/Contribute%20with-Gitpod-908a85?logo=gitpod\&color=blue)](https://gitpod.io/#https://github.com/dev-dami/miniparse)
 
 </div>
 

@@ -4,7 +4,6 @@ import { IntentResult } from "../types";
 export const segment: PipelineComponent = (
   input: IntentResult,
 ): IntentResult => {
-  // Segment text into sentences
   const sentences = input.text
     .split(/(?<=[.?!])\s+/)
     .filter((s) => s.trim().length > 0);

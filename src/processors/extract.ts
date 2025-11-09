@@ -4,89 +4,86 @@ import { IntentResult } from "../types";
 export const extract: PipelineComponent = (
   input: IntentResult,
 ): IntentResult => {
-  // Extract email addresses
   try {
     extractEmails(input);
   } catch (e) {
-    console.warn('Email extraction failed:', e);
+    console.warn("Email extraction failed:", e);
   }
-  
-  // Extract phone numbers
+
   try {
     extractPhones(input);
   } catch (e) {
-    console.warn('Phone extraction failed:', e);
+    console.warn("Phone extraction failed:", e);
   }
-  
-  // Extract URLs
+
   try {
     extractUrls(input);
   } catch (e) {
-    console.warn('URL extraction failed:', e);
+    console.warn("URL extraction failed:", e);
   }
-  
-  // Extract numbers (already handled by tokenizer, but we'll double-check)
+
   try {
     extractNumbers(input);
   } catch (e) {
-    console.warn('Number extraction failed:', e);
+    console.warn("Number extraction failed:", e);
   }
 
   return input;
 };
 
-// Individual extraction functions that can be used separately
-export const extractEmailsOnly: PipelineComponent = (input: IntentResult): IntentResult => {
+export const extractEmailsOnly: PipelineComponent = (
+  input: IntentResult,
+): IntentResult => {
   try {
     extractEmails(input);
   } catch (e) {
-    console.warn('Email extraction failed:', e);
+    console.warn("Email extraction failed:", e);
   }
   return input;
 };
 
-export const extractPhonesOnly: PipelineComponent = (input: IntentResult): IntentResult => {
+export const extractPhonesOnly: PipelineComponent = (
+  input: IntentResult,
+): IntentResult => {
   try {
     extractPhones(input);
   } catch (e) {
-    console.warn('Phone extraction failed:', e);
+    console.warn("Phone extraction failed:", e);
   }
   return input;
 };
 
-export const extractUrlsOnly: PipelineComponent = (input: IntentResult): IntentResult => {
+export const extractUrlsOnly: PipelineComponent = (
+  input: IntentResult,
+): IntentResult => {
   try {
     extractUrls(input);
   } catch (e) {
-    console.warn('URL extraction failed:', e);
+    console.warn("URL extraction failed:", e);
   }
   return input;
 };
 
-export const extractNumbersOnly: PipelineComponent = (input: IntentResult): IntentResult => {
+export const extractNumbersOnly: PipelineComponent = (
+  input: IntentResult,
+): IntentResult => {
   try {
     extractNumbers(input);
   } catch (e) {
-    console.warn('Number extraction failed:', e);
+    console.warn("Number extraction failed:", e);
   }
   return input;
 };
 
 function extractEmails(input: IntentResult): void {
   const text = input.text;
-  // Simple and safe email extraction without complex loops
-  // Find @ symbols and check surrounding text for valid email format
-  
-  // Keep track of email positions to avoid duplicate processing
   const processedEmails = new Set<string>();
-  
+
   for (let i = 0; i < text.length; i++) {
-    if (text[i] === '@') {
-      // Define reasonable search boundaries
-      const startSearch = Math.max(0, i - 30);  // Don't look more than 30 chars back
-      const endSearch = Math.min(text.length, i + 30);  // Don't look more than 30 chars forward
-      
-      // Look backwards for the start of the email address
+    if (text[i] === "@") {
+      const startSearch = Math.max(0, i - 30);
+      const endSearch = Math.min(text.length, i + 30);
+
       let start = i;
       for (let j = i - 1; j >= startSearch; j--) {
         const char = text[j];
@@ -95,11 +92,10 @@ function extractEmails(input: IntentResult): void {
           break;
         }
         if (j === startSearch) {
-          start = j; // If we reached the search boundary, use it as start
+          start = j;
         }
       }
-      
-      // Look forwards for the end of the email address
+
       let end = i;
       for (let j = i + 1; j < endSearch; j++) {
         const char = text[j];
@@ -108,18 +104,18 @@ function extractEmails(input: IntentResult): void {
           break;
         }
         if (j === endSearch - 1) {
-          end = j + 1; // If we reached the search boundary, include the character
+          end = j + 1;
         }
       }
-      
-      // Extract the potential email
-      if (start < i && i < end) {  // Ensure we have a valid range
+
+      if (start < i && i < end) {
         const potentialEmail = text.substring(start, end);
-        
-        // Check if it's a valid email format
-        if (isValidEmail(potentialEmail) && !processedEmails.has(potentialEmail)) {
+        if (
+          isValidEmail(potentialEmail) &&
+          !processedEmails.has(potentialEmail)
+        ) {
           input.entities.push({
-            type: 'email',
+            type: "email",
             value: potentialEmail,
             start,
             end,
@@ -131,69 +127,73 @@ function extractEmails(input: IntentResult): void {
   }
 }
 
-// Helper function for email validation without complex regex
 function isValidEmail(str: string): boolean {
-  if (!str.includes('@')) return false;
-  const parts = str.split('@');
+  if (!str.includes("@")) return false;
+  const parts = str.split("@");
   if (parts.length !== 2) return false;
-  
+
   const [localPart, domainPart] = parts;
   if (!localPart || !domainPart) return false;
-  if (!domainPart.includes('.')) return false;
-  
-  // Basic character validation
+  if (!domainPart.includes(".")) return false;
+
   if (!/^[a-zA-Z0-9._%+-]+$/.test(localPart)) return false;
   if (!/^[a-zA-Z0-9.-]+$/.test(domainPart)) return false;
-  
+
   return true;
 }
 
 function extractPhones(input: IntentResult): void {
   const text = input.text;
-  const maxIterations = text.length; // Safety limit
+  const maxIterations = text.length;
   let iterations = 0;
-  
-  for (let i = 0; i < text.length && iterations < maxIterations; i++, iterations++) {
-    // Check if we're at the start of a potential phone number
+
+  for (
+    let i = 0;
+    i < text.length && iterations < maxIterations;
+    i++, iterations++
+  ) {
     const char = text[i];
-    if (char && isDigit(char) || char === '+' || char === '(') {
-      // Look ahead to find a potential phone number pattern
+    if ((char && isDigit(char)) || char === "+" || char === "(") {
       let phoneEnd = i;
       let digitCount = 0;
       let validPhoneChars = 0;
-      
-      // Look ahead up to 20 characters to find a potential phone
       const lookAheadLimit = Math.min(text.length, i + 20);
-      
+
       while (phoneEnd < lookAheadLimit) {
         const c = text[phoneEnd];
         if (c && isDigit(c)) {
           digitCount++;
           validPhoneChars++;
-        } else if (c && ['-', '.', ' ', '(', ')', '+'].includes(c)) {
+        } else if (c && ["-", ".", " ", "(", ")", "+"].includes(c)) {
           validPhoneChars++;
         } else {
-          break; // Invalid character for phone number
+          break;
         }
         phoneEnd++;
       }
-      
-      // A valid phone number should have 10-15 digits
-      if (digitCount >= 10 && digitCount <= 15 && validPhoneChars === (phoneEnd - i)) {
+
+      if (
+        digitCount >= 10 &&
+        digitCount <= 15 &&
+        validPhoneChars === phoneEnd - i
+      ) {
         const potentialPhone = text.substring(i, phoneEnd);
-        
-        // Safety: don't add if we've seen this exact phone already in this run
-        const existing = input.entities.find(e => e.value === potentialPhone && e.type === 'phone');
-        if (!existing && !input.entities.some(e => e.value === potentialPhone && e.type === 'phone')) {
+        const existing = input.entities.find(
+          (e) => e.value === potentialPhone && e.type === "phone",
+        );
+        if (
+          !existing &&
+          !input.entities.some(
+            (e) => e.value === potentialPhone && e.type === "phone",
+          )
+        ) {
           input.entities.push({
-            type: 'phone',
+            type: "phone",
             value: potentialPhone,
             start: i,
             end: phoneEnd,
           });
         }
-        
-        // Skip the processed phone number to avoid overlapping matches
         i = phoneEnd - 1;
       }
     }
@@ -202,133 +202,142 @@ function extractPhones(input: IntentResult): void {
 
 function extractUrls(input: IntentResult): void {
   const text = input.text;
-  const protocols = ['http://', 'https://'];
-  
+  const protocols = ["http://", "https://"];
+
   for (const protocol of protocols) {
     let searchStart = 0;
     while (searchStart < text.length) {
       const protocolIndex = text.indexOf(protocol, searchStart);
       if (protocolIndex === -1) break;
-      
-      // Find the end of the URL (space, newline, or end of text)
+
       let urlEnd = protocolIndex + protocol.length;
       while (urlEnd < text.length) {
         const char = text[urlEnd];
-        if (char === undefined || [' ', '\n', '\r', '\t', '<', '>', '(', ')', '[', ']', '{', '}'].includes(char)) {
+        if (
+          char === undefined ||
+          [
+            " ",
+            "\n",
+            "\r",
+            "\t",
+            "<",
+            ">",
+            "(",
+            ")",
+            "[",
+            "]",
+            "{",
+            "}",
+          ].includes(char)
+        ) {
           break;
         }
         urlEnd++;
       }
-      
+
       const url = text.substring(protocolIndex, urlEnd);
       if (url && isValidUrl(url)) {
         input.entities.push({
-          type: 'url',
+          type: "url",
           value: url,
           start: protocolIndex,
           end: urlEnd,
         });
       }
-      
-      // Advance search position to avoid infinite loops
+
       searchStart = urlEnd > searchStart ? urlEnd : searchStart + 1;
     }
   }
 }
 
 function isValidUrl(url: string): boolean {
-  // Basic validation for URL format
-  const parts = url.split('://');
+  const parts = url.split("://");
   if (parts.length !== 2) return false;
-  
+
   const protocol = parts[0];
   const path = parts[1];
-  
-  if (!protocol || !path || !['http', 'https'].includes(protocol)) return false;
-  
-  // Check for domain-like structure
-  const domainPath = path.split('/')[0];
+
+  if (!protocol || !path || !["http", "https"].includes(protocol)) return false;
+
+  const domainPath = path.split("/")[0];
   if (!domainPath) return false;
-  
-  const domainParts = domainPath.split('.');
+
+  const domainParts = domainPath.split(".");
   if (domainParts.length < 2) return false;
-  
-  // Check that domain parts are not empty and have valid characters
+
   for (const part of domainParts) {
     if (!part || !/^[a-zA-Z0-9-]+$/.test(part)) {
       return false;
     }
   }
-  
+
   return true;
 }
 
 function extractNumbers(input: IntentResult): void {
-  // Extract numbers using a non-regex approach
-  // This finds sequences of digits that might include decimal points
-  
   const text = input.text;
   let i = 0;
-  
+
   while (i < text.length) {
-    // Find start of a potential number
     while (i < text.length) {
       const currentChar = text[i];
-      if (currentChar !== undefined && (isDigit(currentChar) || currentChar === '.')) {
+      if (
+        currentChar !== undefined &&
+        (isDigit(currentChar) || currentChar === ".")
+      ) {
         break;
       }
       i++;
     }
-    
+
     if (i >= text.length) break;
-    
+
     let start = i;
     let hasDecimal = false;
-    
-    // Extract the number
     let validNumber = false;
+
     while (i < text.length) {
       const char = text[i];
       if (char === undefined) {
         break;
       }
-      
+
       if (isDigit(char)) {
-        validNumber = true; // Mark that we found at least one digit
+        validNumber = true;
         i++;
-      } else if (char === '.' && !hasDecimal) {
-        // Check if this is actually a decimal point or just a separator
-        // by looking at what comes before and after
+      } else if (char === "." && !hasDecimal) {
         const prevChar = text[i - 1];
         const nextChar = text[i + 1];
-        if (i > 0 && prevChar !== undefined && isDigit(prevChar) && 
-            i < text.length - 1 && nextChar !== undefined && isDigit(nextChar)) {
+        if (
+          i > 0 &&
+          prevChar !== undefined &&
+          isDigit(prevChar) &&
+          i < text.length - 1 &&
+          nextChar !== undefined &&
+          isDigit(nextChar)
+        ) {
           hasDecimal = true;
-          validNumber = true; // Mark that we found a valid decimal
+          validNumber = true;
           i++;
         } else {
-          break; // Not a decimal point in a number
+          break;
         }
       } else {
-        break; // End of number
+        break;
       }
     }
-    
+
     if (i > start && validNumber) {
       const numberValue = text.substring(start, i);
-      
-      // Validate that this is indeed a number (not just a digit in a larger string)
       if (isNumber(numberValue)) {
         input.entities.push({
-          type: 'number',
+          type: "number",
           value: numberValue,
           start,
           end: i,
         });
       }
     } else if (i === start) {
-      // If we didn't advance at all from start position, make sure to move forward by 1
-      // This handles cases where we have a '.' by itself or other non-number characters
       i++;
     }
   }
@@ -336,7 +345,7 @@ function extractNumbers(input: IntentResult): void {
 
 function isDigit(char: string | undefined): boolean {
   if (char === undefined) return false;
-  return char >= '0' && char <= '9';
+  return char >= "0" && char <= "9";
 }
 
 function isNumber(str: string): boolean {
